@@ -1,4 +1,6 @@
 
+using System;
+
 namespace _APA.Scripts.Managers
 {
     using UnityEngine;
@@ -7,6 +9,7 @@ namespace _APA.Scripts.Managers
 
     public class NarratorController : MonoBehaviour
     {
+        private const string SPLIT_TRIGGER_ID = "Split";
         [Tooltip("Assign all NarrationEventData Scriptable Objects here.")] [SerializeField]
         private List<NarrationEventData> narrationEvents;
 
@@ -68,6 +71,18 @@ namespace _APA.Scripts.Managers
 
         private void TryPlayNarration(string triggerID)
         {
+            if (triggerID == SPLIT_TRIGGER_ID && SplitSequenceManager.Instance != null)
+            {
+                var lightPlayer = FindObjectOfType<LightInteractionController>(); 
+                if (lightPlayer != null)
+                {
+                    EventManager.TriggerShowStuckDecisionUI(lightPlayer);
+                }
+                else
+                {
+                    Debug.LogWarning("NarratorController: Tried to trigger stuck sequence, but no LightInteractionController was found in scene.");
+                }
+            }
             if (narrationLookup.TryGetValue(triggerID, out NarrationEventData eventData))
             {
                 if (eventData.PlayOnlyOnce && eventData.hasBeenPlayed)
@@ -79,18 +94,18 @@ namespace _APA.Scripts.Managers
                 {
                     return;
                 }
-                if (triggerID == "100" && StuckSequenceManager.Instance != null)
-                {
-                    var lightPlayer = FindObjectOfType<LightInteractionController>(); 
-                    if (lightPlayer != null)
-                    {
-                        EventManager.TriggerShowStuckDecisionUI(lightPlayer);
-                    }
-                    else
-                    {
-                        Debug.LogWarning("NarratorController: Tried to trigger stuck sequence, but no LightInteractionController was found in scene.");
-                    }
-                }
+                // if (triggerID == SPLIT_TRIGGER_ID && StuckSequenceManager.Instance != null)
+                // {
+                //     var lightPlayer = FindObjectOfType<LightInteractionController>(); 
+                //     if (lightPlayer != null)
+                //     {
+                //         EventManager.TriggerShowStuckDecisionUI(lightPlayer);
+                //     }
+                //     else
+                //     {
+                //         Debug.LogWarning("NarratorController: Tried to trigger stuck sequence, but no LightInteractionController was found in scene.");
+                //     }
+                // }
 
 
                 if (SoundManager.Instance != null && eventData.VoiceLine != null)

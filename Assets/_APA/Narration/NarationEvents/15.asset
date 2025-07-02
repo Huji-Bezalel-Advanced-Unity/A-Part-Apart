@@ -13,8 +13,11 @@ MonoBehaviour:
   m_Name: 15
   m_EditorClassIdentifier: 
   TriggerID: 115
-  VoiceLine: {fileID: 8300000, guid: 3fccf1d70b1d37f4086d5bfb96c7ee01, type: 3}
-  SubtitleText: "Tell me, shadow\u2014do you trust him after all that?"
+  VoiceLine: {fileID: 8300000, guid: e457c50a370eaec45bd6431f9806ffb1, type: 3}
+  SubtitleText: "Shadow\ndo you trust him after all that?\nAnd you, boy... do you
+    truly want him back, or are you just afraid of what comes next?\nMaybe it\u2019s
+    not about wanting. Maybe it\u2019s about needing. And maybe\u2026 that\u2019s
+    worse."
   Delay: 0
   Cooldown: 5
   PlayOnlyOnce: 0

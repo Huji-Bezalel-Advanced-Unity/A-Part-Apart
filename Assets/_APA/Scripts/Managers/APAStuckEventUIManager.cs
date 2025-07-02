@@ -1,156 +1,103 @@
+using UnityEngine;
+
 namespace _APA.Scripts.Managers
 {
-    using UnityEngine;
-    using System.Collections;
-
-    public class StuckSequenceManager : MonoBehaviour
+    public class SplitSequenceManager : MonoBehaviour
     {
-        public static StuckSequenceManager Instance { get; private set; }
+        public static SplitSequenceManager Instance { get; private set; }
 
-        [Header("UI References")]
-        [Tooltip("The Canvas GameObject that acts as the black screen or transition visual.")]
-        [SerializeField]
-        private Canvas blackScreenCanvas;
+        [Header("Audio")] [SerializeField] private AudioClip sequenceSound;
+        [SerializeField] private AudioClip afterSound;
+        private AudioSource audioSource;
 
-        [Header("Sequence Settings")] [Tooltip("The sound to play when the sequence starts.")] [SerializeField]
-        private AudioClip sequenceSound;
+        [Header("UI")] [SerializeField] private GameObject screenPanel;
 
-        [Tooltip("The sound to play after the sequence ends.")] [SerializeField]
-        private AudioClip afterSound;
+        private bool isListeningForInput = false;
+        private bool pressedArrow = false;
+        private bool pressedDW = false;
+        private bool afterSoundPlayed = false;
 
-        [Tooltip("How long the screen stays black/canvas is visible (in seconds).")] [SerializeField]
-        private float sequenceDuration = 2.5f;
-
-        [Tooltip("Delay before showing black screen after stuck event (in seconds).")] [SerializeField]
-        private float canvasDelayBeforeShow = 1.5f;
-
-        private LightInteractionController currentPlayerStuck;
-        private Coroutine activeStuckSequenceCoroutine;
-
-        void Awake()
+        private void Awake()
         {
             if (Instance != null && Instance != this)
             {
-                Destroy(gameObject);
+                Destroy(this.gameObject);
                 return;
             }
 
             Instance = this;
 
-            if (blackScreenCanvas != null)
-            {
-                blackScreenCanvas.gameObject.SetActive(false);
-            }
-            else
-            {
-                Debug.LogError("StuckSequenceManager: Black Screen Canvas is not assigned in the Inspector!", this);
-            }
+            audioSource = GetComponent<AudioSource>();
+            if (audioSource == null)
+                audioSource = gameObject.AddComponent<AudioSource>();
         }
 
-        void OnEnable()
+        public void ShowSplitScreen()
         {
-            EventManager.OnShowStuckDecisionUI += StartStuckSequence;
+            screenPanel.SetActive(true);
+            PlaySequenceSound();
         }
 
-        void OnDisable()
+        private void PlaySequenceSound()
         {
-            EventManager.OnShowStuckDecisionUI -= StartStuckSequence;
+            audioSource.PlayOneShot(sequenceSound);
+            Invoke(nameof(StartListeningForInput), 50);
         }
 
-        private void StartStuckSequence(LightInteractionController stuckPlayer)
+        private void StartListeningForInput()
         {
-            if (stuckPlayer == null)
-            {
-                Debug.LogError("StuckSequenceManager: StartStuckSequence called with null player. Aborting.", this);
+            isListeningForInput = true;
+        }
+
+        private void Update()
+        {
+            if (!isListeningForInput || afterSoundPlayed)
                 return;
-            }
 
-            if (blackScreenCanvas == null)
+            if (Input.GetKeyDown(KeyCode.LeftArrow) || Input.GetKeyDown(KeyCode.RightArrow))
+                pressedArrow = true;
+
+            if (Input.GetKeyDown(KeyCode.D) || Input.GetKeyDown(KeyCode.W))
+                pressedDW = true;
+
+            if (pressedArrow && pressedDW)
             {
-                Debug.LogError(
-                    "StuckSequenceManager: Black Screen Canvas is not assigned. Falling back to direct event trigger.",
-                    this);
-                EventManager.TriggerDarkPlayerStuckInLight(stuckPlayer);
-                return;
+                afterSoundPlayed = true;
+                PlayAfterSoundAndClose();
             }
-
-            if (activeStuckSequenceCoroutine != null)
-            {
-                Debug.LogWarning(
-                    "StuckSequenceManager: Attempting to start sequence while another is active. Aborting new request.",
-                    this);
-                return;
-            }
-
-            Debug.Log($"StuckSequenceManager: Starting stuck sequence for {stuckPlayer.name}", this);
-            currentPlayerStuck = stuckPlayer;
-
-            activeStuckSequenceCoroutine = StartCoroutine(HandleStuckSequenceCoroutine());
         }
 
-        private IEnumerator HandleStuckSequenceCoroutine()
+        private void PlayAfterSoundAndClose()
         {
-            if (currentPlayerStuck == null)
-            {
-                Debug.LogError("StuckSequenceManager: currentPlayerStuck is null. Aborting sequence.", this);
-                activeStuckSequenceCoroutine = null;
-                yield break;
-            }
-
-            // Optional delay before showing canvas
-            if (canvasDelayBeforeShow > 0)
-            {
-                Debug.Log($"StuckSequenceManager: Waiting {canvasDelayBeforeShow} seconds before showing black screen.",
-                    this);
-                yield return new WaitForSecondsRealtime(canvasDelayBeforeShow);
-            }
-
-            // Turn ON the black screen Canvas
-            if (blackScreenCanvas != null)
-            {
-                blackScreenCanvas.gameObject.SetActive(true);
-                Debug.Log("StuckSequenceManager: Black screen canvas activated.");
-            }
-
-            // Play initial sound
-            if (sequenceSound != null && SoundManager.Instance != null)
-            {
-                SoundManager.Instance.PlaySFX(sequenceSound);
-                Debug.Log($"StuckSequenceManager: Played initial sound '{sequenceSound.name}'.");
-            }
-
-            // Wait while canvas is visible
-            Debug.Log($"StuckSequenceManager: Waiting for {sequenceDuration} seconds with black screen.");
-            yield return new WaitForSecondsRealtime(sequenceDuration);
-
-            // Play after-sound
-            if (afterSound != null && SoundManager.Instance != null)
-            {
-                SoundManager.Instance.PlaySFX(afterSound);
-                Debug.Log($"StuckSequenceManager: Played after sound '{afterSound.name}'.");
-            }
-
-            // Turn OFF the black screen Canvas
-            if (blackScreenCanvas != null)
-            {
-                blackScreenCanvas.gameObject.SetActive(false);
-                Debug.Log("StuckSequenceManager: Black screen canvas deactivated.");
-            }
-
-            // Trigger event
-            Debug.Log($"StuckSequenceManager: Triggering OnDarkPlayerStuckInLight for {currentPlayerStuck.name}.");
-            EventManager.TriggerDarkPlayerStuckInLight(currentPlayerStuck);
-
-            currentPlayerStuck = null;
-            activeStuckSequenceCoroutine = null;
+            isListeningForInput = false;
+            audioSource.PlayOneShot(afterSound);
+            Invoke(nameof(CloseScreen), afterSound.length);
         }
 
-        void OnDestroy()    
+        private void CloseScreen()
         {
-            if (Instance == this)
-            {
-                Instance = null;
-            }
+            screenPanel.SetActive(false);
+
+            isListeningForInput = false;
+            pressedArrow = false;
+            pressedDW = false;
+            afterSoundPlayed = false;
         }
+        private void HandleShowScreenRequest(LightInteractionController player)
+        {
+            ShowSplitScreen();
+        }
+
+        private void OnEnable()
+        {
+            EventManager.OnShowStuckDecisionUI += HandleShowScreenRequest;
+        }
+
+        private void OnDisable()
+        {
+            EventManager.OnShowStuckDecisionUI -= HandleShowScreenRequest;
+        }
+        
+
     }
 }
