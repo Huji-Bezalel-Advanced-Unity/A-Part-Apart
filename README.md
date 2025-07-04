@@ -2,7 +2,7 @@
 ![image](https://github.com/user-attachments/assets/617b2ebc-ba06-4e58-ae75-269ec043588c)
 
 ## About the Game  
-![Uploading image.png…]()
+![image](https://github.com/user-attachments/assets/27522bba-40b2-4d5c-8135-794067abf190)
 
 *A Part Apart* is a 2D psychological puzzle-platformer that explores the fragile and changing relationship between a boy and his shadow. The game is for two players - one living in the light, the other confined in the darkness - to solve puzzles together while dealing with emotional and narrative tension.
 
