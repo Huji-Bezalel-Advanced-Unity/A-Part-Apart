@@ -8,7 +8,7 @@ using System;
 using System.Collections;
 using APA.Core;
 
-namespace _APA.Scripts.Managers
+namespace _APA.Scripts
 {
     public class GameManager : APAMonoBehaviour
     {
@@ -80,40 +80,11 @@ namespace _APA.Scripts.Managers
         {
             StopAndDestroy(ref currentMenuBackgroundVideoInstance);
         }
-
-        public void PlayMiddleVideo(Action onComplete = null)
-        {
-            Time.timeScale = 0f;
-            PlayEventVideo(middleVideo, () =>
-            {
-                Time.timeScale = 1f;
-                onComplete?.Invoke();
-            });
-        }
+        
 
         public void PlayEndingVideo()
         {
-            EnableBlackScreen();
-            Time.timeScale = 0f;
-
-            StopCurrentVideos();
-            currentEventVideoInstance = Instantiate(videoPlayerPrefab);
-            var controller = currentEventVideoInstance.GetComponent<VideoPlaybackController>();
-            var audio = currentEventVideoInstance.GetComponent<AudioSource>();
-
-            double loopStart = Math.Max(0, gameEndingVideo.length - gameEndingVideoLoopStartTime);
-
-            controller.PlayWithLoopAtEnd(
-                gameEndingVideo,
-                loopStart,
-                onReachedLoop: () =>
-                {
-                    endingVideoInputCoroutine = StartCoroutine(WaitForEnterKey(controller));
-                },
-                onCompleteIfNoLoop: ProceedToCreditsOrMainMenu,
-                audioOutput: GetAudioMode(gameEndingVideo, audio),
-                customAudioSource: audio
-            );
+            PlayEventVideo(finalCreditsVideo, LoadGameWorldScene);
         }
 
         private void PlayEventVideo(VideoClip clip, Action onComplete)
@@ -138,45 +109,6 @@ namespace _APA.Scripts.Managers
                 audioOutput: GetAudioMode(clip, audio),
                 customAudioSource: audio
             );
-        }
-
-        private IEnumerator WaitForEnterKey(VideoPlaybackController controller)
-        {
-            while (true)
-            {
-                if (Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.KeypadEnter))
-                {
-                    controller.ForceStop();
-                    ProceedToCreditsOrMainMenu();
-                    yield break;
-                }
-                yield return null;
-            }
-        }
-
-        private void ProceedToCreditsOrMainMenu()
-        {
-            if (endingVideoInputCoroutine != null)
-            {
-                StopCoroutine(endingVideoInputCoroutine);
-                endingVideoInputCoroutine = null;
-            }
-
-            StopCurrentVideos();
-
-            if (finalCreditsVideo != null)
-            {
-                PlayEventVideo(finalCreditsVideo, () =>
-                {
-                    Time.timeScale = 1f;
-                    LoadMainMenuScene();
-                });
-            }
-            else
-            {
-                Time.timeScale = 1f;
-                LoadMainMenuScene();
-            }
         }
 
         private void StopCurrentVideos()
@@ -204,7 +136,6 @@ namespace _APA.Scripts.Managers
         }
 
         private void LoadGameWorldScene() => SceneManager.LoadScene(gameWorldSceneName);
-        private void LoadMainMenuScene() => SceneManager.LoadScene(mainMenuSceneName);
 
         private bool IsValid(VideoClip clip, RenderTexture texture, GameObject prefab)
         {

@@ -1,8 +1,8 @@
 using UnityEngine;
 
-namespace _APA.Scripts.Managers
+namespace _APA.Scripts
 {
-    public class SplitSequenceManager : MonoBehaviour
+    public class SplitSequenceManager : APAMonoBehaviour
     {
         public static SplitSequenceManager Instance { get; private set; }
 
@@ -41,12 +41,13 @@ namespace _APA.Scripts.Managers
         private void PlaySequenceSound()
         {
             audioSource.PlayOneShot(sequenceSound);
-            Invoke(nameof(StartListeningForInput), 50);
+            Invoke(nameof(StartListeningForInput), 30);
         }
 
         private void StartListeningForInput()
         {
             isListeningForInput = true;
+            afterSoundPlayed = true;
         }
 
         private void Update()
@@ -88,15 +89,31 @@ namespace _APA.Scripts.Managers
             ShowSplitScreen();
         }
 
+        // private void OnEnable()
+        // {
+        //     EventManager.OnShowStuckDecisionUI += HandleShowScreenRequest;
+        // }
+        //
+        // private void OnDisable()
+        // {
+        //     EventManager.OnShowStuckDecisionUI -= HandleShowScreenRequest;
+        // }
         private void OnEnable()
         {
-            EventManager.OnShowStuckDecisionUI += HandleShowScreenRequest;
+            Manager.EventManager.AddListener(APAEventName.OnShowStuckDecisionUI, OnShowStuckDecisionUI);
         }
 
         private void OnDisable()
         {
-            EventManager.OnShowStuckDecisionUI -= HandleShowScreenRequest;
+            Manager.EventManager.RemoveListener(APAEventName.OnShowStuckDecisionUI, OnShowStuckDecisionUI);
         }
+
+        private void OnShowStuckDecisionUI(object data)
+        {
+            var player = data as LightInteractionController;
+            HandleShowScreenRequest(player);
+        }
+
         
 
     }

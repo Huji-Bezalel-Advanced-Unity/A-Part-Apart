@@ -1,4 +1,4 @@
-namespace _APA.Scripts.Managers
+namespace _APA.Scripts
 {
     using System;
     using APA.Core;

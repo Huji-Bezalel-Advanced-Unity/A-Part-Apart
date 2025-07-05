@@ -1,29 +1,37 @@
-
 using System;
 using UnityEngine;
 
-namespace APA.Core
+namespace _APA.Scripts
 {
     public class APAManager
     {
-        public static APAManager Instance { get; private set; }
-
-        public APAEventManager EventManager;
-
-        public APAManager()
+        private static APAManager _instance;
+        public static APAManager Instance
         {
-            Instance = this;
+            get
+            {
+                if (_instance == null)
+                {
+                    _instance = new APAManager();
+                    _instance.Initialize();  
+                }
+                return _instance;
+            }
         }
 
-        public void LoadManagers(Action onComplete)
+        public APAEventManager EventManager { get; private set; }
+
+        private APAManager() { }
+
+        private void Initialize()
         {
             var monoManager = new GameObject("MonoManager");
             monoManager.AddComponent<APAMonoManagerObject>();
+            UnityEngine.Object.DontDestroyOnLoad(monoManager);
 
-            EventManager = new();
+            EventManager = new APAEventManager();
 
-            APADebug.Log("LoadManagers Completed");
-            onComplete?.Invoke();
+            
         }
     }
 }

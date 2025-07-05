@@ -6,7 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace APA.Core
+namespace _APA.Scripts
 {
     public class APAEventManager
     {
@@ -50,5 +50,19 @@ namespace APA.Core
     {
         None,
         OnObjectActivate,
+        OnObjectDeactivate,
+        OnLoadSceneRequested,
+        OnDarkPlayerStuckInLight,
+        OnDarkPlayerStuckInLightCamera,
+        OnBarrierOpened,
+        OnPlayersPassedBarrier,
+        OnShowStuckDecisionUI,
+        OnVideoEnded,
+        OnVideoSkipped,
+        OnVideoError,
+        
+        
+        
+        
     }
 }

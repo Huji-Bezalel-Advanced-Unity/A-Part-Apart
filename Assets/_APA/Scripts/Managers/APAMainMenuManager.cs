@@ -1,10 +1,10 @@
-namespace _APA.Scripts.Managers
+namespace _APA.Scripts
 {
     using UnityEngine;
     using UnityEngine.UI;
     using UnityEngine.SceneManagement;
 
-    public class MainMenuManager : MonoBehaviour
+    public class MainMenuManager : APAMonoBehaviour
     {
         [SerializeField] private string gameWorldSceneName = "GameWorld";
         [SerializeField] private RawImage backgroundVideoDisplay;

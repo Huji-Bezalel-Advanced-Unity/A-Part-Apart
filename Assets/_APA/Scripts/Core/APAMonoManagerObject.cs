@@ -1,4 +1,4 @@
-namespace APA.Core
+namespace _APA.Scripts
 {
     public class APAMonoManagerObject : APAMonoBehaviour
     {

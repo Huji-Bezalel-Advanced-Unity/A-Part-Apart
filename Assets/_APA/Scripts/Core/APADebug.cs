@@ -3,7 +3,7 @@ using System;
 using System.Diagnostics;
 using Debug = UnityEngine.Debug;
 
-namespace APA.Core
+namespace _APA.Scripts
 {
     public class APADebug
     {
