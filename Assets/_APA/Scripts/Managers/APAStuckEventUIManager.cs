@@ -52,7 +52,7 @@ namespace _APA.Scripts
 
         private void Update()
         {
-            if (!isListeningForInput || afterSoundPlayed)
+            if (!isListeningForInput || !afterSoundPlayed)
                 return;
 
             if (Input.GetKeyDown(KeyCode.LeftArrow) || Input.GetKeyDown(KeyCode.RightArrow))
